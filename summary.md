@@ -1,14 +1,14 @@
 # Summarize new features of genomation
 Katarzyna Wreczycka  
-[Genomation](https://github.com/BIMSBbioinfo/genomation) is an R package to summarize, annotate
+[Genomation](https://bioconductor.org/packages/devel/bioc/html/genomation.html) is an R package to summarize, annotate
 and visualize genomic intervals. It contains a collection of tools for visualizing and analyzing genome-wide data sets,
 i.e. RNA-seq, reduced representation bisulfite sequencing (RRBS) or chromatin-immunoprecipitation followed by sequencing 
 (Chip-seq) data.
 
 We recently added new fetures to genomation and here are they presented on example of 
-binding profiles of 6 transcription factors around the Ctcf binding sites.
+binding profiles of 6 transcription factors around the Ctcf binding sites derived from Chip-seq.
 
-All new functionality are available on the latest version of genomation available on github.
+All new functionalities are available on the latest version of genomation available on [it's github website](https://github.com/BIMSBbioinfo/genomation).
 
 
 
@@ -31,7 +31,7 @@ library(GenomicRanges)
 
 # Extending genomation to work with paired-end BAM files
 
-Genomation can work with paired-end BAM files. Mates from a pair
+Genomation can work with paired-end BAM files. Mates from reads
 are treated as fragments (are stitched together).
 
 
@@ -41,12 +41,12 @@ bam.files = list.files(genomationDataPath, full.names=TRUE, pattern='bam$')
 bam.files = bam.files[!grepl('Cage', bam.files)]
 ```
 
-# Accelerate of function responsible for reading files
-This is achived by using readr::read_delim function to read genomic files
-instead of read.table.
-Additionally if skip="auto" in readGeneric or track.line="auto" other functions
-like readBroadPeak
-then they detect UCSC header (and first track). #TODO
+# Accelerate functions responsible for reading genomic files
+This is achived by using _readr::read_delim_ function to read genomic files
+instead of _read.table_.
+Additionally if skip="auto" in _readGeneric_ or track.line="auto" other functions that read genomic files
+like _readBroadPeak_
+that detect UCSC header (and first track).
 
 
 ```r
@@ -58,10 +58,10 @@ ctcf.peaks = ctcf.peaks[order(-ctcf.peaks$signalValue)]
 ctcf.peaks = resize(ctcf.peaks, width=1000, fix='center')
 ```
 
-# Parallelizing data processing
-We use ScoreMatrixList function to extract coverage values of all transcription factors 
-around chipseq peaks. ScoreMatrixList was improved by adding new argument cores
-that indicated number of cores to be used at the same time by using parallel:mclapply.
+# Parallelizing data processing in ScoreMatrixList
+We use _ScoreMatrixList_ function to extract coverage values of all transcription factors 
+around chipseq peaks. _ScoreMatrixList_ was improved by adding new argument cores
+that indicated number of cores to be used at the same time by using _parallel:mclapply_.
 
 
 ```r
@@ -74,7 +74,7 @@ names(sml) = sampleInfo$sampleName[match(names(sml),sampleInfo$fileName)]
 ```
 
 # Arithmetic, indicator and logic operations as well as subsetting work on score matrices
-Arithmetic, indicator and logic operations work on ScoreMatrix, ScoreMatrixBin and ScoreMatrixList<br />
+Arithmetic, indicator and logic operations work on _ScoreMatrix_, _ScoreMatrixBin_ and _ScoreMatrixList_<br />
 objects, e.i.:<br />
 Arith: "+", "-", "*", "^", "%%", "%/%", "/" <br />
 Compare: "==", ">", "<", "!=", "<=", ">=" <br />
@@ -120,7 +120,8 @@ sml[[6]] <- NULL
 ```
 
 # New arguments in visualizing functions
-Because of large signal scale the rows of each element in the ScoreMatrixList.
+Due to large signal scale of rows of each element in the _ScoreMatrixList_ 
+we scale them.
 
 
 ```r
@@ -144,7 +145,7 @@ It's an extention of previous version that could cluster rows of heatmaps using 
 
 
 ```r
-# k-means algorithm, 2 clusters
+# k-means algorithm with 2 clusters
 cl1 <- function(x) kmeans(x, centers=2)$cluster
 multiHeatMatrix(sml.scaled, xcoords=c(-500, 500), clustfun = cl1)
 ```
@@ -152,7 +153,7 @@ multiHeatMatrix(sml.scaled, xcoords=c(-500, 500), clustfun = cl1)
 ![](summary_files/figure-html/unnamed-chunk-9-1.png) 
 
 ```r
-# hierarchical clustering with Ward's method for agglomeration, 2 clusters
+# hierarchical clustering with Ward's method for agglomeration into 2 clusters
 cl2 <- function(x) cutree(hclust(dist(x), method="ward"), k=2)
 multiHeatMatrix(sml.scaled, xcoords=c(-500, 500), clustfun = cl2)
 ```
@@ -176,6 +177,9 @@ multiHeatMatrix(sml.scaled, xcoords=c(-500, 500), clustfun = cl1, clust.matrix =
 ![](summary_files/figure-html/unnamed-chunk-10-1.png) 
 
 ## centralTend in plotMeta
+We extended visualization capabilities for meta-plots.
+_plotMeta_ fucntion can plot not only mean, but also median as central tendency
+and it can be set up using _centralTend_ argument.
 extending visualization capabilities for meta-plots - improving the plotMeta func-
 tion to plot not only mean, but also median as a central tendency, adding possibil-
 ity to plot dispersion bands around the central tendency and to smoothing central
@@ -192,6 +196,8 @@ plotMeta(mat=sml.scaled, profile.names=names(sml.scaled),
 ![](summary_files/figure-html/unnamed-chunk-11-1.png) 
 
 ## smoothfun in plotMeta
+We added _smoothfun_ argument to smooth central tendency as well as dispersion bands around
+it which is shown in the next figure
 
 
 ```r
@@ -205,6 +211,14 @@ plotMeta(mat=sml.scaled, profile.names=names(sml.scaled),
 ![](summary_files/figure-html/unnamed-chunk-12-1.png) 
 
 ## dispersion in plotMeta	 
+Dispersion bands around _centralTend_ can take one of the arguments:
+         
+* "se"  shows standard error of the mean and 95 percent
+             confidence interval for the mean
+* "sd"  shows standard deviation and 2*(standard deviation)
+* "IQR" shows 1st and 3rd quartile and confidence interval
+             around the median based on the median +/- 1.57 *
+             IQR/sqrt(n) (notches)
 
 
 ```r
@@ -218,10 +232,174 @@ plotMeta(mat=sml.scaled, profile.names=names(sml.scaled),
 
 ![](summary_files/figure-html/unnamed-chunk-13-1.png) 
 
+# patternMatrix object 
+We added new class patternMatrix that look for k-mer occurrences.
+It is still under development, but it can be installed using:
+
+
+```r
+install_github("katwre/genomation",ref="patternMatrix",build_vignettes=FALSE)	    
+```
+
+```
+## Downloading github repo katwre/genomation@patternMatrix
+## Installing genomation
+## Skipping 10 packages not available: Biostrings, BSgenome, GenomeInfoDb, GenomicAlignments, GenomicRanges, impute, IRanges, Rsamtools, rtracklayer, seqPattern
+## '/usr/lib/R/bin/R' --no-site-file --no-environ --no-save --no-restore  \
+##   CMD INSTALL  \
+##   '/tmp/RtmpmhspJY/devtoolscee4884c77a/katwre-genomation-58c6cd3'  \
+##   --library='/home/kasia/R/x86_64-pc-linux-gnu-library/3.1'  \
+##   --install-tests 
+## 
+## Reloading installed genomation
+```
+
+```
+## Warning: replacing previous import by
+## 'GenomeInfoDb::.__C__GenomeDescription' when loading 'genomation'
+```
+
+```
+## Warning: replacing previous import by 'GenomeInfoDb::.__C__Seqinfo' when
+## loading 'genomation'
+```
+
+```
+## Warning: replacing previous import by 'GenomeInfoDb::dropSeqlevels' when
+## loading 'genomation'
+```
+
+```
+## Warning: replacing previous import by 'GenomeInfoDb::extractSeqlevels' when
+## loading 'genomation'
+```
+
+```
+## Warning: replacing previous import by
+## 'GenomeInfoDb::extractSeqlevelsByGroup' when loading 'genomation'
+```
+
+```
+## Warning: replacing previous import by
+## 'GenomeInfoDb::fetchExtendedChromInfoFromUCSC' when loading 'genomation'
+```
+
+```
+## Warning: replacing previous import by 'GenomeInfoDb::GenomeDescription'
+## when loading 'genomation'
+```
+
+```
+## Warning: replacing previous import by 'GenomeInfoDb::genomeStyles' when
+## loading 'genomation'
+```
+
+```
+## Warning: replacing previous import by 'GenomeInfoDb::keepSeqlevels' when
+## loading 'genomation'
+```
+
+```
+## Warning: replacing previous import by
+## 'GenomeInfoDb::keepStandardChromosomes' when loading 'genomation'
+```
+
+```
+## Warning: replacing previous import by 'GenomeInfoDb::mapSeqlevels' when
+## loading 'genomation'
+```
+
+```
+## Warning: replacing previous import by 'GenomeInfoDb::orderSeqlevels' when
+## loading 'genomation'
+```
+
+```
+## Warning: replacing previous import by 'GenomeInfoDb::rankSeqlevels' when
+## loading 'genomation'
+```
+
+```
+## Warning: replacing previous import by 'GenomeInfoDb::renameSeqlevels' when
+## loading 'genomation'
+```
+
+```
+## Warning: replacing previous import by 'GenomeInfoDb::restoreSeqlevels' when
+## loading 'genomation'
+```
+
+```
+## Warning: replacing previous import by 'GenomeInfoDb::Seqinfo' when loading
+## 'genomation'
+```
+
+```
+## Warning: replacing previous import by 'GenomeInfoDb::seqlevelsInGroup' when
+## loading 'genomation'
+```
+
+```
+## Warning: replacing previous import by 'GenomeInfoDb::summary.Seqinfo' when
+## loading 'genomation'
+```
+
+```r
+#ctcf motif from the JASPAR database
+ctcf.pwm = matrix( c(87, 167, 281,  56,   8, 744,  40, 107 ,851  , 5 ,333 , 54 , 12,  56, 104, 372 , 82, 117 ,402, 
+		     291, 145 , 49, 800 ,903,  13, 528, 433 , 11 ,  0 ,  3 , 12,   0 ,  8, 733 , 13, 482 ,322, 181, 
+		     76 ,414 ,449  ,21 ,  0 , 65 ,334 , 48 , 32, 903, 566, 504 ,890 ,775  , 5 ,507 ,307 , 73, 266, 
+		     459 ,187, 134  ,36,   2 , 91,11, 324 , 18,   3 ,  9 ,341 ,  8 , 71 , 67 , 17 , 37, 396,  59 ), 
+		     ncol=19)
+rownames(ctcf.pwm) <- c("A","C","G","T")
+
+library(BSgenome.Hsapiens.UCSC.hg19)
+hg19 = BSgenome.Hsapiens.UCSC.hg19
+
+p = patternMatrix(pattern=ctcf.pwm, windows=ctcf.peaks, genome=hg19)
+```
+
+```
+## Warning in .Call2("PWM_score_starting_at", pwm, subject, starting.at,
+## base_codes, : 'subject' contains letters not in [ACGT] ==> assigned weight
+## 0 to them
+```
+
+```
+## Warning in .Call2("PWM_score_starting_at", pwm, subject, starting.at,
+## base_codes, : 'subject' contains letters not in [ACGT] ==> assigned weight
+## 0 to them
+```
+
+```
+## Warning in .Call2("PWM_score_starting_at", pwm, subject, starting.at,
+## base_codes, : 'subject' contains letters not in [ACGT] ==> assigned weight
+## 0 to them
+```
+
+```
+## Warning in .Call2("PWM_score_starting_at", pwm, subject, starting.at,
+## base_codes, : 'subject' contains letters not in [ACGT] ==> assigned weight
+## 0 to them
+```
+
+```r
+p.scaled = scaleScoreMatrix(p, scalefun=function(x) (x - min(x))/(max(x) - min(x)))
+```
+
+Visualization of the patternMatrix actually doesn't show any pattern in this data.
+
+
+```r
+heatMatrix(p.scaled, xcoords=c(-500, 500), winsorize=c(0,95))
+```
+
+![](summary_files/figure-html/unnamed-chunk-15-1.png) 
+
 # Integration with Travis CI for auto-testing
 Recently we integrated genomation with [Travis CI](travis-ci.org) which allows users to see current status
 of the package which is updated during every change of the package. Travis
-automatically runs R CMD CHECK and reports it. Such shields are visible on the genomation github site:<br />
+automatically runs R CMD CHECK and reports it. Shields visible below are on the genomation github site:<br />
 [https://github.com/BIMSBbioinfo/genomation](https://github.com/BIMSBbioinfo/genomation)
 <br />
 Status [![Build Status](https://api.travis-ci.org/BIMSBbioinfo/genomation.svg)](https://travis-ci.org/BIMSBbioinfo/genomation)   [![codecov.io](https://codecov.io/github/BIMSBbioinfo/genomation/coverage.svg)](https://codecov.io/github/BIMSBbioinfo/genomation?branch=master)     [![BioC_years](http://www.bioconductor.org/shields/years-in-bioc/genomation.svg)](http://www.bioconductor.org/packages/release/bioc/html/genomation.html)     [![BioC_availability](http://www.bioconductor.org/shields/availability/release/genomation.svg)](http://www.bioconductor.org/packages/release/bioc/html/genomation.html)
@@ -252,43 +430,47 @@ sessionInfo()
 ##  [8] datasets  methods   base     
 ## 
 ## other attached packages:
-## [1] genomation_1.1.22    readr_0.1.1          GenomicRanges_1.18.4
-## [4] GenomeInfoDb_1.2.5   IRanges_2.0.1        S4Vectors_0.4.0     
-## [7] BiocGenerics_0.12.1  devtools_1.8.0       rmarkdown_0.6.1     
+##  [1] genomation_1.1.21                 BSgenome.Hsapiens.UCSC.hg19_1.4.0
+##  [3] BSgenome_1.34.1                   rtracklayer_1.26.3               
+##  [5] Biostrings_2.34.1                 XVector_0.6.0                    
+##  [7] seqPattern_1.1.1                  readr_0.1.1                      
+##  [9] GenomicRanges_1.18.4              GenomeInfoDb_1.2.5               
+## [11] IRanges_2.0.1                     S4Vectors_0.4.0                  
+## [13] BiocGenerics_0.12.1               devtools_1.8.0                   
+## [15] rmarkdown_0.6.1                  
 ## 
 ## loaded via a namespace (and not attached):
 ##  [1] base64enc_0.1-3         BatchJobs_1.6          
 ##  [3] BBmisc_1.9              BiocParallel_1.0.3     
-##  [5] Biostrings_2.34.1       bitops_1.0-6           
-##  [7] brew_1.0-6              checkmate_1.6.2        
-##  [9] chron_2.3-47            codetools_0.2-11       
-## [11] colorspace_1.2-6        data.table_1.9.6       
-## [13] DBI_0.3.1               digest_0.6.8           
-## [15] evaluate_0.8            fail_1.2               
-## [17] foreach_1.4.2           GenomicAlignments_1.2.2
-## [19] ggplot2_1.0.1           git2r_0.11.0           
-## [21] gridBase_0.4-7          gtable_0.1.2           
-## [23] htmltools_0.2.6         impute_1.40.0          
-## [25] iterators_1.0.7         knitr_1.11             
-## [27] magrittr_1.5            MASS_7.3-44            
-## [29] matrixStats_0.14.2      memoise_0.2.1          
-## [31] munsell_0.4.2           plotrix_3.5-12         
-## [33] plyr_1.8.3              proto_0.3-10           
-## [35] Rcpp_0.12.1             RCurl_1.95-4.7         
-## [37] reshape2_1.4.1          roxygen2_4.1.1         
-## [39] Rsamtools_1.18.3        RSQLite_1.0.0          
-## [41] rstudioapi_0.3.1        rtracklayer_1.26.3     
+##  [5] bitops_1.0-6            brew_1.0-6             
+##  [7] checkmate_1.6.2         chron_2.3-47           
+##  [9] codetools_0.2-11        colorspace_1.2-6       
+## [11] data.table_1.9.6        DBI_0.3.1              
+## [13] digest_0.6.8            evaluate_0.8           
+## [15] fail_1.2                foreach_1.4.2          
+## [17] GenomicAlignments_1.2.2 ggplot2_1.0.1          
+## [19] git2r_0.11.0            gridBase_0.4-7         
+## [21] gtable_0.1.2            htmltools_0.2.6        
+## [23] httr_0.6.1              impute_1.40.0          
+## [25] iterators_1.0.7         KernSmooth_2.23-14     
+## [27] knitr_1.11              magrittr_1.5           
+## [29] MASS_7.3-44             matrixStats_0.14.2     
+## [31] memoise_0.2.1           munsell_0.4.2          
+## [33] plotrix_3.5-12          plyr_1.8.3             
+## [35] proto_0.3-10            Rcpp_0.12.1            
+## [37] RCurl_1.95-4.7          reshape2_1.4.1         
+## [39] roxygen2_4.1.1          Rsamtools_1.18.3       
+## [41] RSQLite_1.0.0           rstudioapi_0.3.1       
 ## [43] rversions_1.0.0         scales_0.3.0           
 ## [45] sendmailR_1.2-1         stringi_0.5-5          
 ## [47] stringr_1.0.0           tcltk_3.1.3            
 ## [49] tools_3.1.3             XML_3.98-1.1           
-## [51] XVector_0.6.0           yaml_2.1.13            
-## [53] zlibbioc_1.12.0
+## [51] yaml_2.1.13             zlibbioc_1.12.0
 ```
 
 
 ---
 title: "summary.R"
 author: "kasia"
-date: "Thu Sep 24 02:25:03 2015"
+date: "Thu Sep 24 04:48:23 2015"
 ---
