@@ -19,7 +19,7 @@
 #'
 #' Recently were added new fetures to genomation and here we present them on example of 
 #' binding profiles of 6 transcription factors around the Ctcf binding sites derived from Chip-seq.
-#' All new functionalities are available on the latest version of genomation available on 
+#' All new functionalities are available in the latest version of genomation that can be found on 
 #' [it's github website](https://github.com/BIMSBbioinfo/genomation).
 #'
 # install the package from github
@@ -43,9 +43,9 @@ bam.files = bam.files[!grepl('Cage', bam.files)]
 #' # Accelerate functions responsible for reading genomic files
 #' This is achived by using _readr::read_delim_ function to read genomic files
 #' instead of _read.table_.
-#' Additionally if skip="auto" in _readGeneric_ or track.line="auto" in other functions that read genomic files,
-#' e.g. _readBroadPeak_
-#' can detect UCSC header (and first track).
+#' Additionally if skip="auto" argument is provided in _readGeneric_or track.line="auto" in other functions 
+#' that read genomic files, e.g. _readBroadPeak_ then
+#' UCSC header is detected (and first track).
 
 ctcf.peaks = readBroadPeak(file.path(genomationDataPath, 
                                      'wgEncodeBroadHistoneH1hescCtcfStdPk.broadPeak.gz'))
@@ -54,9 +54,9 @@ ctcf.peaks = ctcf.peaks[order(-ctcf.peaks$signalValue)]
 ctcf.peaks = resize(ctcf.peaks, width=1000, fix='center')
 
 #' # Parallelizing data processing in ScoreMatrixList
-#' The _ScoreMatrixList_ function is designed to extract coverage values of all transcription factors 
+#' We use _ScoreMatrixList_ function to extract coverage values of all transcription factors 
 #' around ChIP-seq peaks. _ScoreMatrixList_ was improved by adding new argument _cores_
-#' that indicate number of cores to be used at the same time by using _parallel:mclapply_.
+#' that indicates number of cores to be used at the same time (by using _parallel:mclapply_).
 
 sml = ScoreMatrixList(bam.files, ctcf.peaks, bin.num=50, type='bam', cores=2)
 
@@ -117,13 +117,9 @@ multiHeatMatrix(sml.scaled, xcoords=c(-500, 500), clustfun = cl1, clust.matrix =
 
 #' ## Central tendencies in line plots: centralTend in plotMeta
 #' We extended visualization capabilities for meta-plots.
-#' _plotMeta_ fucntion can plot not only mean, but also median as central tendency
+#' _plotMeta_ function can plot not only mean, but also median as central tendency
 #' and it can be set up using _centralTend_ argument.
-#' Previously it user could plot only mean.
-#' extending visualization capabilities for meta-plots - improving the plotMeta func-
-#' tion to plot not only mean, but also median as a central tendency, adding possibil-
-#' ity to plot dispersion bands around the central tendency and to smoothing central
-#' tendency and dispersion bands,
+#' Previously user could plot only mean.
 
 plotMeta(mat=sml.scaled, profile.names=names(sml.scaled),
 	 xcoords=c(-500, 500),
@@ -132,8 +128,9 @@ plotMeta(mat=sml.scaled, profile.names=names(sml.scaled),
 
 #' ## Smoothing central tendency: smoothfun in plotMeta
 #' We added _smoothfun_ argument to smooth central tendency as well as dispersion bands around
-#' it which is shown in the next figure. Smoothfun has to be a function.
-	 	 
+#' it which is shown in the next figure. Smoothfun has to be a function that returns a 
+#' list that contains a vector of y coordinates (list with numeric vector named '$y').
+
 plotMeta(mat=sml.scaled, profile.names=names(sml.scaled),
 	 xcoords=c(-500, 500),
 	 winsorize=c(0,99),
@@ -141,7 +138,8 @@ plotMeta(mat=sml.scaled, profile.names=names(sml.scaled),
 	 smoothfun=function(x) stats::smooth.spline(x, spar=0.5))
 
 #' ## Plotting dispersion around central lines in line plots: dispersion in plotMeta	 
-#' Dispersion bands around _centralTend_ can take one of the arguments:
+#' We added new argument _dispersion_ to plotMeta that shows dispersion bands around _centralTend_.
+#' It can take one of the arguments:
 #'          
 #'* "se"  shows standard error of the mean and 95 percent
 #'              confidence interval for the mean
@@ -150,7 +148,7 @@ plotMeta(mat=sml.scaled, profile.names=names(sml.scaled),
 #'              around the median based on the median +/- 1.57 *
 #'              IQR/sqrt(n) (notches)
 
-plotMeta(mat=sml.scaled, profile.names=names(sml.scaled),
+plotMeta(mat=sml, profile.names=names(sml),
 	 xcoords=c(-500, 500),
 	 winsorize=c(0,99),
 	 centralTend="mean",  
@@ -162,25 +160,12 @@ plotMeta(mat=sml.scaled, profile.names=names(sml.scaled),
 #' k-mer and PWM occurrences over predefined equal width windows.
 #' If one pattern (character of length 1 or PWM matrix) is given then it returns ScoreMatrix, 
 #' if more than one then ScoreMatrixList.
-#' Returned ScoreMatrix can be either a binary matrix, where 1 corresponds to presence of pattern and 0 to its absence
-#' or scores themselves calculated using getPatternOccurrenceList or motifScanHits functions from 
-#' the seqPattern package.
-#' Windows can be a DNAStringList object or GRanges object (and genome argument has to be provided
-#' with BSgenome object).
+#' It finds either positions of pattern hits above a specified threshold and creates score matrix filled with
+#' 1 (presence of pattern) and 0 (absence) or
+#' matrix with score themselves.
+#' Windows can be a DNAStringList object or GRanges object (but then genome argument has to be provided,
+#' a BSgenome object).
 #' It is still under development, but it can be installed using:
-
-
-The funcion produces a base-pair resolution matrix of scores for
-     given equal width windows of interest. The returned matrix can be
-     used to draw meta profiles or heatmap of read coverage or wig
-     track-like data. The ‘windows’ argument can be a predefined region
-     around transcription start sites or other regions of interest that
-     have equal lengths The function removes all window that fall off
-     the Rle object - have the start coordinate < 1 or end coordinate >
-     length(Rle) The function takes the intersection of names in the
-     Rle and GRanges objects. On Windows OS the function will give an
-     error if the target is a file in .bigWig format.
-     
 
 install_github("katwre/genomation",ref="patternMatrix",build_vignettes=FALSE)	    
 
@@ -192,8 +177,7 @@ ctcf.pwm = matrix( c(87, 167, 281,  56,   8, 744,  40, 107 ,851  , 5 ,333 , 54 ,
 		     ncol=19)
 rownames(ctcf.pwm) <- c("A","C","G","T")
 # convert frequency matrix to PWM matrix
-
-
+ctcf.pwm = ctcf.pwm / colSums(ctcf.pwm)
 
 library(BSgenome.Hsapiens.UCSC.hg19)
 hg19 = BSgenome.Hsapiens.UCSC.hg19
