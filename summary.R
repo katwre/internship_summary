@@ -1,5 +1,5 @@
 #'---
-#'title: "Summarize new features of genomation"
+#'title: "Summary of new features of genomation"
 #'author: "Katarzyna Wreczycka"
 #'output:
 #'  html_document:
@@ -42,6 +42,7 @@ bam.files = bam.files[!grepl('Cage', bam.files)]
 #' Additionally if skip="auto" argument is provided in _readGeneric_or track.line="auto" in other functions 
 #' that read genomic files, e.g. _readBroadPeak_ then
 #' UCSC header is detected (and first track).
+library(GenomicRanges)
 
 ctcf.peaks = readBroadPeak(file.path(genomationDataPath, 
                                      'wgEncodeBroadHistoneH1hescCtcfStdPk.broadPeak.gz'))
@@ -177,16 +178,11 @@ ctcf.pfm = matrix( as.integer(c(87, 167, 281,  56,   8, 744,  40, 107 ,851  , 5 
 		     ncol=19,byrow=TRUE)
 rownames(ctcf.pfm) <- c("A","C","G","T")
 
+library(Biostrings)
 prior.params = c(A=0.25, C=0.25, G=0.25, T=0.25)
-
-x=ctcf.pfm
-
 priorProbs = prior.params/sum(prior.params)
-postProbs = t( t(x + prior.params)/(colSums(x)+sum(prior.params)) )
+postProbs = t( t(ctcf.pfm + prior.params)/(colSums(x)+sum(prior.params)) )
 ctcf.pwm = unitScale(log2(postProbs/priorProbs))
-
-# convert frequency matrix to position probability matrix
-ctcf.ppm = unitScale(ctcf.pfm / colSums(ctcf.pfm))
 
 library(BSgenome.Hsapiens.UCSC.hg19)
 hg19 = BSgenome.Hsapiens.UCSC.hg19
@@ -195,9 +191,10 @@ p = patternMatrix(pattern=ctcf.pwm, windows=ctcf.peaks, genome=hg19, min.score=0
 
 #' Visualization of the patternMatrix
 #' _patternMatrix_ (here as ScoreMatrix object) can be visualized using i.e. heatMatrix, heatMeta or plotMeta functions.
-heatMatrix(p, xcoords=c(-500, 500), main="CTCF motif",col=c('lightgray', 'blue'))
+heatMatrix(p, xcoords=c(-500, 500), main="CTCF motif")
 
-plotMeta(mat=p, smoothfun=function(x) stats::lowess(x, f = 1/10), line.col="red",main="ctcf motif")
+plotMeta(mat=p, xcoords=c(-500, 500), smoothfun=function(x) stats::lowess(x, f = 1/10), 
+         line.col="red", main="ctcf motif")
 
 #' # Integration with Travis CI for auto-testing
 #' Recently we integrated genomation with [Travis CI](travis-ci.org). It allows users to see current status
