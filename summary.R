@@ -76,11 +76,15 @@ sml
 sml[[6]] <- NULL
 
 
-#' # New arguments in visualization functions
+#' # New arguments and improvements in visualization functions
 
 #' Due to large signal scale of rows of each element in the _ScoreMatrixList_ 
 #' we scale them.
 sml.scaled = scaleScoreMatrixList(sml)
+
+#' # Faster heatmaps
+#'
+#'  _HeatMatrix_ and _multiHeatMatrix_ function works faster by faster assigning colors.
 
 #' Heatmap profile of scaled coverage shows a colocalization of Ctcf, Rad21 and Znf143. 
 multiHeatMatrix(sml.scaled, xcoords=c(-500, 500))
@@ -149,14 +153,15 @@ plotMeta(mat=sml, profile.names=names(sml),
 	 centralTend="mean",  
 	 smoothfun=function(x) stats::smooth.spline(x, spar=0.5),
 	 dispersion="se", lwd=4)
-	    
+  
+            	    
 #' # Calculating scores that correspond to k-mer or PWM matrix occurence: patternMatrix object 
 #' We added new function _patternMatrix_ that calculates
 #' k-mer and PWM occurrences over predefined equal width windows.
 #' If one pattern (character of length 1 or PWM matrix) is given then it returns ScoreMatrix, 
 #' if more than one then ScoreMatrixList.
 #' It finds either positions of pattern hits above a specified threshold and creates score matrix filled with
-#' 1 (presence of pattern) and 0 (absence) or
+#' 1 (presence of pattern) and 0 (its absence) or
 #' matrix with score themselves.
 #' Windows can be a DNAStringList object or GRanges object (but then genome argument has to be provided,
 #' a BSgenome object).
@@ -165,29 +170,34 @@ plotMeta(mat=sml, profile.names=names(sml),
 install_github("katwre/genomation",ref="patternMatrix",build_vignettes=FALSE)	    
 
 #ctcf motif from the JASPAR database
-ctcf.pwm = matrix( c(87, 167, 281,  56,   8, 744,  40, 107 ,851  , 5 ,333 , 54 , 12,  56, 104, 372 , 82, 117 ,402, 
+ctcf.pfm = matrix( as.integer(c(87, 167, 281,  56,   8, 744,  40, 107 ,851  , 5 ,333 , 54 , 12,  56, 104, 372 , 82, 117 ,402, 
 		     291, 145 , 49, 800 ,903,  13, 528, 433 , 11 ,  0 ,  3 , 12,   0 ,  8, 733 , 13, 482 ,322, 181, 
 		     76 ,414 ,449  ,21 ,  0 , 65 ,334 , 48 , 32, 903, 566, 504 ,890 ,775  , 5 ,507 ,307 , 73, 266, 
-		     459 ,187, 134  ,36,   2 , 91,11, 324 , 18,   3 ,  9 ,341 ,  8 , 71 , 67 , 17 , 37, 396,  59 ), 
-		     ncol=19)
-rownames(ctcf.pwm) <- c("A","C","G","T")
-# convert frequency matrix to PWM matrix
-ctcf.pwm = ctcf.pwm / colSums(ctcf.pwm)
+		     459 ,187, 134  ,36,   2 , 91,11, 324 , 18,   3 ,  9 ,341 ,  8 , 71 , 67 , 17 , 37, 396,  59 )), 
+		     ncol=19,byrow=TRUE)
+rownames(ctcf.pfm) <- c("A","C","G","T")
+
+prior.params = c(A=0.25, C=0.25, G=0.25, T=0.25)
+
+x=ctcf.pfm
+
+priorProbs = prior.params/sum(prior.params)
+postProbs = t( t(x + prior.params)/(colSums(x)+sum(prior.params)) )
+ctcf.pwm = unitScale(log2(postProbs/priorProbs))
+
+# convert frequency matrix to position probability matrix
+ctcf.ppm = unitScale(ctcf.pfm / colSums(ctcf.pfm))
 
 library(BSgenome.Hsapiens.UCSC.hg19)
 hg19 = BSgenome.Hsapiens.UCSC.hg19
 
-p = patternMatrix(pattern=ctcf.pwm, windows=ctcf.peaks, genome=hg19)
-p.scaled = scaleScoreMatrix(p, scalefun=function(x) (x - min(x))/(max(x) - min(x)))
+p = patternMatrix(pattern=ctcf.pwm, windows=ctcf.peaks, genome=hg19, min.score=0.8)
 
 #' Visualization of the patternMatrix
 #' _patternMatrix_ (here as ScoreMatrix object) can be visualized using i.e. heatMatrix, heatMeta or plotMeta functions.
-heatMatrix(p.scaled, xcoords=c(-500, 500), winsorize=c(0,95))
+heatMatrix(p, xcoords=c(-500, 500), main="CTCF motif",col=c('lightgray', 'blue'))
 
-plotMeta(mat=p, smoothfun=function(x) stats::lowess(x, f = 1/5), line.col="red")
-plotMeta(mat=p, smoothfun=function(x) stats::lowess(x, f = 1/10), line.col="red")
-plotMeta(mat=p, smoothfun=function(x) stats::lowess(x, f = 1/10), centralTend="median", line.col="red")
-
+plotMeta(mat=p, smoothfun=function(x) stats::lowess(x, f = 1/10), line.col="red",main="ctcf motif")
 
 #' # Integration with Travis CI for auto-testing
 #' Recently we integrated genomation with [Travis CI](travis-ci.org). It allows users to see current status
