@@ -23,13 +23,9 @@
 #' [it's github website](https://github.com/BIMSBbioinfo/genomation).
 #'
 # install the package from github
-# library(devtools)
-# install_github("BIMSBbioinfo/genomation",build_vignettes=FALSE)
-# library(genomation)
 library(devtools)
-load_all("../genomation")
-library(GenomicRanges)
-
+install_github("BIMSBbioinfo/genomation",build_vignettes=FALSE)
+library(genomation)
 
 #' # Extending genomation to work with paired-end BAM files
 #'
@@ -64,7 +60,6 @@ sml = ScoreMatrixList(bam.files, ctcf.peaks, bin.num=50, type='bam', cores=2)
 sampleInfo = read.table(system.file('extdata/SamplesInfo.txt',
                                     package='genomationData'),header=TRUE, sep='\t')
 names(sml) = sampleInfo$sampleName[match(names(sml),sampleInfo$fileName)]
-
 
 #' # Arithmetic, indicator and logic operations as well as subsetting work on score matrices
 #' Arithmetic, indicator and logic operations work on _ScoreMatrix_, _ScoreMatrixBin_ and _ScoreMatrixList_<br />
@@ -186,9 +181,13 @@ p = patternMatrix(pattern=ctcf.pwm, windows=ctcf.peaks, genome=hg19)
 p.scaled = scaleScoreMatrix(p, scalefun=function(x) (x - min(x))/(max(x) - min(x)))
 
 #' Visualization of the patternMatrix
-#' _patternMatrix_ can be 
+#' _patternMatrix_ (here as ScoreMatrix object) can be visualized using i.e. heatMatrix, heatMeta or plotMeta functions.
+heatMatrix(p.scaled, xcoords=c(-500, 500), winsorize=c(0,95))
+
+plotMeta(mat=p, smoothfun=function(x) stats::lowess(x, f = 1/5), line.col="red")
 plotMeta(mat=p, smoothfun=function(x) stats::lowess(x, f = 1/10), line.col="red")
 plotMeta(mat=p, smoothfun=function(x) stats::lowess(x, f = 1/10), centralTend="median", line.col="red")
+
 
 #' # Integration with Travis CI for auto-testing
 #' Recently we integrated genomation with [Travis CI](travis-ci.org). It allows users to see current status
