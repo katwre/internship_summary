@@ -17,7 +17,7 @@
 #' i.e. RNA-seq, reduced representation bisulfite sequencing (RRBS) or chromatin-immunoprecipitation followed by sequencing 
 #' (Chip-seq) data.
 #'
-#' Recently were added new fetures to genomation and here we present them on example of 
+#' Recently we added new features to genomation and here we present them on example of 
 #' binding profiles of 6 transcription factors around the Ctcf binding sites derived from Chip-seq.
 #' All new functionalities are available in the latest version of genomation that can be found on 
 #' [it's github website](https://github.com/BIMSBbioinfo/genomation).
@@ -57,7 +57,7 @@ ctcf.peaks = resize(ctcf.peaks, width=1000, fix='center')
 
 sml = ScoreMatrixList(bam.files, ctcf.peaks, bin.num=50, type='bam', cores=2)
 
-# file descriptions of transcription factors
+# descriptions of file that contain info. about transcription factors
 sampleInfo = read.table(system.file('extdata/SamplesInfo.txt',
                                     package='genomationData'),header=TRUE, sep='\t')
 names(sml) = sampleInfo$sampleName[match(names(sml),sampleInfo$fileName)]
@@ -77,13 +77,13 @@ sml
 sml[[6]] <- NULL
 
 
-#' # New arguments and improvements in visualization functions
+#' # Improvements and new arguments in visualization functions
 
 #' Due to large signal scale of rows of each element in the _ScoreMatrixList_ 
 #' we scale them.
 sml.scaled = scaleScoreMatrixList(sml)
 
-#' # Faster heatmaps
+#' ## Faster heatmaps
 #'
 #'  _HeatMatrix_ and _multiHeatMatrix_ function works faster by faster assigning colors.
 
@@ -122,20 +122,20 @@ multiHeatMatrix(sml.scaled, xcoords=c(-500, 500), clustfun = cl1, clust.matrix =
 #' Previously user could plot only mean.
 
 plotMeta(mat=sml.scaled, profile.names=names(sml.scaled),
-	 xcoords=c(-500, 500),
-	 winsorize=c(0,99),
-	 centralTend="mean")
+         xcoords=c(-500, 500),
+         winsorize=c(0,99),
+         centralTend="mean")
 
 #' ## Smoothing central tendency: smoothfun in plotMeta
 #' We added _smoothfun_ argument to smooth central tendency as well as dispersion bands around
 #' it which is shown in the next figure. Smoothfun has to be a function that returns a 
-#' list that contains a vector of y coordinates (list with numeric vector named '$y').
+#' list that contains a vector of y coordinates (vector named '$y').
 
 plotMeta(mat=sml.scaled, profile.names=names(sml.scaled),
-	 xcoords=c(-500, 500),
-	 winsorize=c(0,99),
-	 centralTend="mean",  
-	 smoothfun=function(x) stats::smooth.spline(x, spar=0.5))
+         xcoords=c(-500, 500),
+         winsorize=c(0,99),
+         centralTend="mean",  
+         smoothfun=function(x) stats::smooth.spline(x, spar=0.5))
 
 #' ## Plotting dispersion around central lines in line plots: dispersion in plotMeta	 
 #' We added new argument _dispersion_ to plotMeta that shows dispersion bands around _centralTend_.
@@ -149,39 +149,33 @@ plotMeta(mat=sml.scaled, profile.names=names(sml.scaled),
 #'              IQR/sqrt(n) (notches)
 
 plotMeta(mat=sml, profile.names=names(sml),
-	 xcoords=c(-500, 500),
-	 winsorize=c(0,99),
-	 centralTend="mean",  
-	 smoothfun=function(x) stats::smooth.spline(x, spar=0.5),
-	 dispersion="se", lwd=4)
-  
-            	    
-#' # Calculating scores that correspond to k-mer or PWM matrix occurence: patternMatrix object 
+         xcoords=c(-500, 500),
+         winsorize=c(0,99),
+         centralTend="mean",  
+         smoothfun=function(x) stats::smooth.spline(x, spar=0.5),
+         dispersion="se", lwd=4)
+
+#' # Calculating scores that correspond to k-mer or PWM matrix occurence: patternMatrix function
 #' We added new function _patternMatrix_ that calculates
 #' k-mer and PWM occurrences over predefined equal width windows.
 #' If one pattern (character of length 1 or PWM matrix) is given then it returns ScoreMatrix, 
-#' if more than one then ScoreMatrixList.
+#' if more than one character ot list of PWM matrices then ScoreMatrixList.
 #' It finds either positions of pattern hits above a specified threshold and creates score matrix filled with
 #' 1 (presence of pattern) and 0 (its absence) or
-#' matrix with score themselves.
-#' Windows can be a DNAStringList object or GRanges object (but then genome argument has to be provided,
-#' a BSgenome object).
-#' It is still under development, but it can be installed using:
-
-install_github("katwre/genomation",ref="patternMatrix",build_vignettes=FALSE)	    
+#' matrix with score themselves. _windows_ can be a DNAStringList object or GRanges object 
+#' (but then genome argument has to be provided, a BSgenome object). 
 
 #ctcf motif from the JASPAR database
-ctcf.pfm = matrix( as.integer(c(87, 167, 281,  56,   8, 744,  40, 107 ,851  , 5 ,333 , 54 , 12,  56, 104, 372 , 82, 117 ,402, 
-		     291, 145 , 49, 800 ,903,  13, 528, 433 , 11 ,  0 ,  3 , 12,   0 ,  8, 733 , 13, 482 ,322, 181, 
-		     76 ,414 ,449  ,21 ,  0 , 65 ,334 , 48 , 32, 903, 566, 504 ,890 ,775  , 5 ,507 ,307 , 73, 266, 
-		     459 ,187, 134  ,36,   2 , 91,11, 324 , 18,   3 ,  9 ,341 ,  8 , 71 , 67 , 17 , 37, 396,  59 )), 
-		     ncol=19,byrow=TRUE)
+ctcf.pfm = matrix(as.integer(c(87,167,281,56,8,744,40,107,851,5,333,54,12,56,104,372,82,117,402, 
+                                291,145,49,800,903,13,528,433,11,0,3,12,0,8,733,13,482,322,181, 
+                                76,414,449,21,0,65,334,48,32,903,566,504,890,775,5,507,307,73,266, 
+                                459,187,134,36,2,91,11,324,18,3,9,341,8,71,67,17,37,396,59)), 
+                  ncol=19,byrow=TRUE)
 rownames(ctcf.pfm) <- c("A","C","G","T")
 
-library(Biostrings)
 prior.params = c(A=0.25, C=0.25, G=0.25, T=0.25)
 priorProbs = prior.params/sum(prior.params)
-postProbs = t( t(ctcf.pfm + prior.params)/(colSums(x)+sum(prior.params)) )
+postProbs = t( t(ctcf.pfm + prior.params)/(colSums(ctcf.pfm)+sum(prior.params)) )
 ctcf.pwm = unitScale(log2(postProbs/priorProbs))
 
 library(BSgenome.Hsapiens.UCSC.hg19)
@@ -207,4 +201,4 @@ plotMeta(mat=p, xcoords=c(-500, 500), smoothfun=function(x) stats::lowess(x, f =
 #' <br />
 # <br />
 sessionInfo()
- 
+
