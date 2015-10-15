@@ -8,7 +8,6 @@
 #'    fig_width: 7
 #'    fig_height: 7
 #'    keep_md: true
-#'    cache: true
 #'---
 
 
@@ -173,6 +172,7 @@ ctcf.pfm = matrix(as.integer(c(87,167,281,56,8,744,40,107,851,5,333,54,12,56,104
                   ncol=19,byrow=TRUE)
 rownames(ctcf.pfm) <- c("A","C","G","T")
 
+library(Biostrings)
 prior.params = c(A=0.25, C=0.25, G=0.25, T=0.25)
 priorProbs = prior.params/sum(prior.params)
 postProbs = t( t(ctcf.pfm + prior.params)/(colSums(ctcf.pfm)+sum(prior.params)) )

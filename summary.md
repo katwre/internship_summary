@@ -21,10 +21,11 @@ install_github("BIMSBbioinfo/genomation",build_vignettes=FALSE)
 ```
 ## Downloading GitHub repo BIMSBbioinfo/genomation@master
 ## Installing genomation
-## '/Library/Frameworks/R.framework/Resources/bin/R' --no-site-file  \
-##   --no-environ --no-save --no-restore CMD INSTALL  \
-##   '/private/var/folders/yw/d8380s055ljgrwmx9817twlh000plr/T/RtmpwGy9Vw/devtools9aa434cbe5d/BIMSBbioinfo-genomation-40b6019'  \
-##   --library='/Library/Frameworks/R.framework/Versions/3.2/Resources/library'  \
+## Skipping 1 packages not available: seqPattern
+## '/usr/lib/R/bin/R' --no-site-file --no-environ --no-save --no-restore  \
+##   CMD INSTALL  \
+##   '/tmp/Rtmpq7RJOz/devtools1e7b6c5eb878/BIMSBbioinfo-genomation-40b6019'  \
+##   --library='/home/kasia/R/x86_64-pc-linux-gnu-library/3.1'  \
 ##   --install-tests 
 ## 
 ## Reloading installed genomation
@@ -264,6 +265,7 @@ ctcf.pfm = matrix(as.integer(c(87,167,281,56,8,744,40,107,851,5,333,54,12,56,104
                   ncol=19,byrow=TRUE)
 rownames(ctcf.pfm) <- c("A","C","G","T")
 
+library(Biostrings)
 prior.params = c(A=0.25, C=0.25, G=0.25, T=0.25)
 priorProbs = prior.params/sum(prior.params)
 postProbs = t( t(ctcf.pfm + prior.params)/(colSums(ctcf.pfm)+sum(prior.params)) )
@@ -309,12 +311,17 @@ sessionInfo()
 ```
 
 ```
-## R version 3.2.2 (2015-08-14)
-## Platform: x86_64-apple-darwin13.4.0 (64-bit)
-## Running under: OS X 10.9.4 (Mavericks)
+## R version 3.1.3 (2015-03-09)
+## Platform: x86_64-pc-linux-gnu (64-bit)
+## Running under: Ubuntu 14.04.2 LTS
 ## 
 ## locale:
-## [1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+##  [1] LC_CTYPE=pl_PL.UTF-8       LC_NUMERIC=C              
+##  [3] LC_TIME=pl_PL.UTF-8        LC_COLLATE=pl_PL.UTF-8    
+##  [5] LC_MONETARY=pl_PL.UTF-8    LC_MESSAGES=pl_PL.UTF-8   
+##  [7] LC_PAPER=pl_PL.UTF-8       LC_NAME=C                 
+##  [9] LC_ADDRESS=C               LC_TELEPHONE=C            
+## [11] LC_MEASUREMENT=pl_PL.UTF-8 LC_IDENTIFICATION=C       
 ## 
 ## attached base packages:
 ##  [1] stats4    parallel  grid      stats     graphics  grDevices utils    
@@ -322,41 +329,45 @@ sessionInfo()
 ## 
 ## other attached packages:
 ##  [1] genomation_1.1.27                 BSgenome.Hsapiens.UCSC.hg19_1.4.0
-##  [3] BSgenome_1.36.3                   rtracklayer_1.28.10              
-##  [5] markdown_0.7.7                    knitr_1.11                       
-##  [7] Biostrings_2.36.4                 XVector_0.8.0                    
-##  [9] matrixStats_0.14.2                plotrix_3.5-12                   
-## [11] GenomicRanges_1.20.8              GenomeInfoDb_1.4.3               
-## [13] IRanges_2.2.9                     S4Vectors_0.6.6                  
-## [15] BiocGenerics_0.14.0               devtools_1.9.1                   
+##  [3] BSgenome_1.34.1                   rtracklayer_1.26.3               
+##  [5] Biostrings_2.34.1                 XVector_0.6.0                    
+##  [7] GenomicRanges_1.18.4              GenomeInfoDb_1.2.5               
+##  [9] IRanges_2.0.1                     S4Vectors_0.4.0                  
+## [11] BiocGenerics_0.12.1               devtools_1.9.1                   
+## [13] rmarkdown_0.8.1                  
 ## 
 ## loaded via a namespace (and not attached):
-##  [1] reshape2_1.4.1          seqPattern_1.0.1       
-##  [3] colorspace_1.2-6        htmltools_0.2.6        
-##  [5] yaml_2.1.13             chron_2.3-47           
-##  [7] XML_3.98-1.3            BiocParallel_1.2.22    
-##  [9] lambda.r_1.1.7          plyr_1.8.3             
-## [11] stringr_1.0.0           zlibbioc_1.14.0        
-## [13] munsell_0.4.2           gtable_0.1.2           
-## [15] futile.logger_1.4.1     memoise_0.2.1          
-## [17] evaluate_0.8            BiocInstaller_1.18.4   
-## [19] curl_0.9.3              proto_0.3-10           
-## [21] Rcpp_0.12.1             KernSmooth_2.23-15     
-## [23] readr_0.1.1             scales_0.3.0           
-## [25] Rsamtools_1.20.5        impute_1.42.0          
-## [27] ggplot2_1.0.1           digest_0.6.8           
-## [29] stringi_0.5-5           tools_3.2.2            
-## [31] bitops_1.0-6            magrittr_1.5           
-## [33] RCurl_1.95-4.7          futile.options_1.0.0   
-## [35] MASS_7.3-43             gridBase_0.4-7         
-## [37] data.table_1.9.6        rmarkdown_0.8          
-## [39] httr_1.0.0              R6_2.1.1               
-## [41] GenomicAlignments_1.4.2
+##  [1] base64enc_0.1-3         BatchJobs_1.6          
+##  [3] BBmisc_1.9              BiocInstaller_1.16.5   
+##  [5] BiocParallel_1.0.3      bitops_1.0-6           
+##  [7] brew_1.0-6              checkmate_1.6.2        
+##  [9] chron_2.3-47            codetools_0.2-14       
+## [11] colorspace_1.2-6        curl_0.9.3             
+## [13] data.table_1.9.6        DBI_0.3.1              
+## [15] digest_0.6.8            evaluate_0.8           
+## [17] fail_1.3                foreach_1.4.3          
+## [19] GenomicAlignments_1.2.2 ggplot2_1.0.1          
+## [21] gridBase_0.4-7          gtable_0.1.2           
+## [23] htmltools_0.2.6         httr_1.0.0             
+## [25] impute_1.40.0           iterators_1.0.8        
+## [27] KernSmooth_2.23-15      knitr_1.11             
+## [29] magrittr_1.5            MASS_7.3-44            
+## [31] matrixStats_0.14.2      memoise_0.2.1          
+## [33] munsell_0.4.2           plotrix_3.5-12         
+## [35] plyr_1.8.3              proto_0.3-10           
+## [37] R6_2.1.1                Rcpp_0.12.1            
+## [39] RCurl_1.95-4.7          readr_0.1.1            
+## [41] reshape2_1.4.1          Rsamtools_1.18.3       
+## [43] RSQLite_1.0.0           scales_0.3.0           
+## [45] sendmailR_1.2-1         seqPattern_1.1.1       
+## [47] stringi_0.5-5           stringr_1.0.0          
+## [49] tools_3.1.3             XML_3.98-1.3           
+## [51] yaml_2.1.13             zlibbioc_1.12.0
 ```
 
 
 ---
 title: "summary.R"
-author: "kwreczy"
-date: "Mon Oct 12 17:59:59 2015"
+author: "kasia"
+date: "Thu Oct 15 22:20:13 2015"
 ---
